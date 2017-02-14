@@ -1,69 +1,33 @@
-Symfony Standard Edition
-========================
+# Test project for an issue I have with mocking time in symfony 2.8
 
-Welcome to the Symfony Standard Edition - a fully-functional Symfony
-application that you can use as the skeleton for your new applications.
+I did a clean install of new project, using composer:
 
-For details on how to download and get started with Symfony, see the
-[Installation][1] chapter of the Symfony Documentation.
+    composer create-project symfony/framework-standard-edition symfony-phpunit-bridge-clockmock "2.8.*"
 
-What's inside?
---------------
+Then I added 2 unittests in the `DefaultControllerTest`: one which explicitly enables the ClockMock, and one with the `@group time-sensitive` annotation:
 
-The Symfony Standard Edition is configured with the following defaults:
+    $ phpunit -c app/ --filter explicit
+    PHPUnit 5.1.3 by Sebastian Bergmann and contributors.
+    .                                                                   1 / 1 (100%)
+    Time: 24 ms, Memory: 4.00Mb
+    OK (1 test, 1 assertion)
 
-  * An AppBundle you can use to start coding;
+So, the explicit test works: it does a sleep(5), but finishes in 24ms.
 
-  * Twig as the only configured template engine;
+However:
 
-  * Doctrine ORM/DBAL;
+    $ phpunit -c app/ --filter annotation
+    PHPUnit 5.1.3 by Sebastian Bergmann and contributors.
+    .                                                                   1 / 1 (100%)
+    Time: 5.02 seconds, Memory: 4.00Mb
+    OK (1 test, 1 assertion)
 
-  * Swiftmailer;
+So, the test using the `@group` annotation actually takes 5 seconds, meaning the ClockMock didn't work.
 
-  * Annotations enabled for everything.
+There's nothing wrong with the `@group` annotation itself:
 
-It comes pre-configured with the following bundles:
-
-  * **FrameworkBundle** - The core Symfony framework bundle
-
-  * [**SensioFrameworkExtraBundle**][6] - Adds several enhancements, including
-    template and routing annotation capability
-
-  * [**DoctrineBundle**][7] - Adds support for the Doctrine ORM
-
-  * [**TwigBundle**][8] - Adds support for the Twig templating engine
-
-  * [**SecurityBundle**][9] - Adds security by integrating Symfony's security
-    component
-
-  * [**SwiftmailerBundle**][10] - Adds support for Swiftmailer, a library for
-    sending emails
-
-  * [**MonologBundle**][11] - Adds support for Monolog, a logging library
-
-  * **WebProfilerBundle** (in dev/test env) - Adds profiling functionality and
-    the web debug toolbar
-
-  * **SensioDistributionBundle** (in dev/test env) - Adds functionality for
-    configuring and working with Symfony distributions
-
-  * [**SensioGeneratorBundle**][13] (in dev/test env) - Adds code generation
-    capabilities
-
-  * **DebugBundle** (in dev/test env) - Adds Debug and VarDumper component
-    integration
-
-All libraries and bundles included in the Symfony Standard Edition are
-released under the MIT or BSD license.
-
-Enjoy!
-
-[1]:  https://symfony.com/doc/2.8/setup.html
-[6]:  https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/index.html
-[7]:  https://symfony.com/doc/2.8/doctrine.html
-[8]:  https://symfony.com/doc/2.8/templating.html
-[9]:  https://symfony.com/doc/2.8/security.html
-[10]: https://symfony.com/doc/2.8/email.html
-[11]: https://symfony.com/doc/2.8/logging.html
-[12]: https://symfony.com/doc/2.8/assetic/asset_management.html
-[13]: https://symfony.com/doc/current/bundles/SensioGeneratorBundle/index.html
+    $ phpunit -c app/ --group time-sensitive
+    PHPUnit 5.1.3 by Sebastian Bergmann and contributors.
+    .                                                                   1 / 1 (100%)
+    Time: 5.02 seconds, Memory: 4.00Mb
+    OK (1 test, 1 assertion)

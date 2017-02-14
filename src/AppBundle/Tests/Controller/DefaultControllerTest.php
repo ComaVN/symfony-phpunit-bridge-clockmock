@@ -2,17 +2,36 @@
 
 namespace AppBundle\Tests\Controller;
 
+use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class DefaultControllerTest extends WebTestCase
 {
-    public function testIndex()
+    public static function setUpBeforeClass()
     {
-        $client = static::createClient();
+        parent::setUpBeforeClass();
+        ClockMock::register(__CLASS__);
+    }
 
-        $crawler = $client->request('GET', '/');
+    /**
+     * @group time-sensitive
+     */
+    public function testTimeMock_annotation()
+    {
+        $time = time();
+        sleep(5);
+        $this->assertSame(5, time() - $time);
+    }
 
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertContains('Welcome to Symfony', $crawler->filter('#container h1')->text());
+    public function testTimeMock_explicit()
+    {
+        ClockMock::withClockMock(true);
+        try {
+            $time = time();
+            sleep(5);
+            $this->assertSame(5, time() - $time);
+        } finally {
+            ClockMock::withClockMock(false);
+        }
     }
 }
