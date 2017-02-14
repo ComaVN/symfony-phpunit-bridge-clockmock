@@ -12,7 +12,7 @@ Then I added 2 unittests in the `DefaultControllerTest`: one which explicitly en
     Time: 24 ms, Memory: 4.00Mb
     OK (1 test, 1 assertion)
 
-So, the explicit test works: it does a sleep(5), but finishes in 24ms.
+So, the explicit test works: it does a `sleep(5)`, but finishes in 24ms.
 
 However:
 
